@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect x="2" y="2" width="60" height="60" rx="14" ry="14" fill="#6B8E23"/>
+  <g fill="#FFFFFF" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="800">
+    <path d="M14 18 H24.5 C29.2 18 32.5 21 32.5 25.2 C32.5 28.3 30.7 30.8 27.9 31.9 L33.2 41 H27.6 L23.1 32.8 H19 V41 H14 Z M19 28.6 H24 C26 28.6 27.4 27.3 27.4 25.4 C27.4 23.6 26 22.3 24 22.3 H19 Z"/>
+    <path d="M40.4 18 H45.6 L54.2 41 H49 L47.3 36.2 H38.7 L37 41 H31.9 Z M43 23.6 L40 32.2 H46 Z"/>
+  </g>
+  <g transform="translate(40 6)">
+    <path d="M8 14 C 8 10, 10 6, 14 3" stroke="#D2691E" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M8 11 C 4 10, 2 7, 3 3 C 7 4, 9 7, 8 11 Z" fill="#D2691E"/>
+    <path d="M11 7 C 13 4, 17 3, 20 5 C 18 9, 14 10, 11 7 Z" fill="#D2691E"/>
+  </g>
+</svg>
