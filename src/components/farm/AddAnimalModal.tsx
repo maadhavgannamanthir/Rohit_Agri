@@ -10,7 +10,7 @@ interface Props {
 
 const SAMPLE_PHOTOS = [
   'https://images.unsplash.com/photo-1484557985045-edf25e08da73?w=600&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1560884001-f1ec77e0bbe1?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=600&h=400&fit=crop',
 ];
@@ -94,9 +94,8 @@ const AddAnimalModal: React.FC<Props> = ({ open, onClose, onAdd }) => {
                 <button
                   key={p}
                   onClick={() => setForm({ ...form, photoUrl: p })}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 transition ${
-                    form.photoUrl === p ? 'border-[#6B8E23] ring-2 ring-[#6B8E23]/30' : 'border-transparent hover:border-stone-300'
-                  }`}
+                  className={`aspect-square rounded-lg overflow-hidden border-2 transition ${form.photoUrl === p ? 'border-[#6B8E23] ring-2 ring-[#6B8E23]/30' : 'border-transparent hover:border-stone-300'
+                    }`}
                 >
                   <img src={p} className="w-full h-full object-cover" alt="" />
                 </button>
