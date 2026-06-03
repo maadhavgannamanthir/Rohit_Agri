@@ -11,6 +11,7 @@ import ClientsView from './farm/ClientsView';
 import MilkDeliveriesView from './farm/MilkDeliveriesView';
 import InvoicesView from './farm/InvoicesView';
 import PaymentsView from './farm/PaymentsView';
+import SettingsView from './farm/SettingsView';
 import AnimalModal from './farm/AnimalModal';
 import AddAnimalModal from './farm/AddAnimalModal';
 import AuthPage from './farm/AuthPage';
@@ -31,6 +32,7 @@ import {
   Invoice,
   InvoiceItem,
   Payment,
+  FarmSettings,
   formatCurrency,
 } from '@/lib/farmData';
 import {
@@ -71,6 +73,8 @@ import {
   fetchPayments,
   addPayment as dbAddPayment,
   deletePayment as dbDeletePayment,
+  fetchFarmSettings,
+  saveFarmSettings as dbSaveFarmSettings,
 } from '@/lib/farmDb';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from './farm/Header';
@@ -102,6 +106,7 @@ const AppLayout: React.FC = () => {
   const [deliveries, setDeliveries] = useState<MilkDelivery[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [settings, setSettings] = useState<FarmSettings | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +132,7 @@ const AppLayout: React.FC = () => {
   const loadAll = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const [a, e, p, mc, c, d, inv, pay] = await Promise.all([
+      const [a, e, p, mc, c, d, inv, pay, fsData] = await Promise.all([
         fetchAnimals(),
         fetchExpenses(),
         fetchPartners(),
@@ -136,6 +141,7 @@ const AppLayout: React.FC = () => {
         fetchDeliveries(),
         fetchInvoices(),
         fetchPayments(),
+        fetchFarmSettings(),
       ]);
       setAnimals(a);
       setExpenses(e);
@@ -145,6 +151,21 @@ const AppLayout: React.FC = () => {
       setDeliveries(d);
       setInvoices(inv);
       setPayments(pay);
+
+      let fs = fsData;
+      if (!fs) {
+        fs = await dbSaveFarmSettings({
+          farmName: 'Rohit Agro Farm',
+          address: 'Pune, Maharashtra',
+          phone: '+91 98765 43210',
+          email: 'billing@rohitagro.com',
+          gstNumber: '',
+          invoicePrefix: 'INV',
+          currency: 'INR',
+          logoUrl: '',
+        });
+      }
+      setSettings(fs);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally { setLoading(false); }
@@ -161,6 +182,7 @@ const AppLayout: React.FC = () => {
       setDeliveries([]);
       setInvoices([]);
       setPayments([]);
+      setSettings(null);
       setError(null);
       setLoading(false);
     }
@@ -351,6 +373,8 @@ const AppLayout: React.FC = () => {
     try {
       const newPayment = await dbAddPayment(p);
       setPayments((prev) => [newPayment, ...prev]);
+      const nextInvoices = await fetchInvoices();
+      setInvoices(nextInvoices);
       pushToast(`Payment recorded: ${formatCurrency(newPayment.amountReceived)}`);
     } catch (err) {
       pushToast(err instanceof Error ? err.message : 'Failed to record payment', 'error');
@@ -361,9 +385,21 @@ const AppLayout: React.FC = () => {
     try {
       await dbDeletePayment(p);
       setPayments((prev) => prev.filter((item) => item.id !== p.id));
+      const nextInvoices = await fetchInvoices();
+      setInvoices(nextInvoices);
       pushToast(`Payment deleted`);
     } catch (err) {
       pushToast(err instanceof Error ? err.message : 'Failed to delete payment', 'error');
+    }
+  };
+
+  const handleSaveSettings = async (fs: Omit<FarmSettings, 'userId'>) => {
+    try {
+      const updated = await dbSaveFarmSettings(fs);
+      setSettings(updated);
+      pushToast('Farm settings saved');
+    } catch (err) {
+      pushToast(err instanceof Error ? err.message : 'Failed to save settings', 'error');
     }
   };
 
@@ -485,6 +521,7 @@ const AppLayout: React.FC = () => {
     expenses: 'Expenses',
     partners: 'Partners',
     reports: 'Reports',
+    settings: 'Settings',
   };
   const subtitles: Record<ViewKey, string> = {
     dashboard: 'Overview of your farm performance',
@@ -498,6 +535,7 @@ const AppLayout: React.FC = () => {
     expenses: 'Operational costs & allocations',
     partners: 'Profit shares & distributions',
     reports: 'Analytics, exports & insights',
+    settings: 'Configure farm profile & billing defaults',
   };
 
 
@@ -582,6 +620,7 @@ const AppLayout: React.FC = () => {
             clients={clients}
             deliveries={deliveries}
             invoices={invoices}
+            settings={settings}
             onAdd={handleAddInvoice}
             onDelete={handleDeleteInvoice}
             onUpdateStatus={handleUpdateInvoiceStatus}
@@ -614,6 +653,7 @@ const AppLayout: React.FC = () => {
           />
         )}
         {view === 'reports' && <ReportsView animals={animals} expenses={expenses} partners={partners} />}
+        {view === 'settings' && <SettingsView settings={settings} onSave={handleSaveSettings} />}
       </>
     );
   };

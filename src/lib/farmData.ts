@@ -358,3 +358,16 @@ export function getGoalProjection(animal: Animal): GoalProjection {
     requiredDailyGainKg,
   };
 }
+
+export interface FarmSettings {
+  userId: string;
+  farmName: string;
+  address: string;
+  phone: string;
+  email: string;
+  gstNumber: string;
+  invoicePrefix: string;
+  currency: string;
+  logoUrl: string;
+}
+

@@ -29,7 +29,8 @@ export type ViewKey =
   | 'payments'
   | 'expenses'
   | 'partners'
-  | 'reports';
+  | 'reports'
+  | 'settings';
 
 interface Props {
   current: ViewKey;
@@ -183,8 +184,19 @@ const Sidebar: React.FC<Props> = ({ current, onSelect, open, onClose, onSignInCl
 
         {/* Footer */}
         <div className="p-3 border-t border-white/5">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-stone-300 hover:bg-white/[0.04] hover:text-white transition">
-            <Settings className="w-4 h-4 text-stone-400" />
+          <button
+            onClick={() => {
+              onSelect('settings');
+              onClose();
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition
+              ${
+                current === 'settings'
+                  ? 'bg-white/[0.08] text-white font-semibold'
+                  : 'text-stone-300 hover:bg-white/[0.04] hover:text-white'
+              }`}
+          >
+            <Settings className="w-3.5 h-3.5 text-stone-400" />
             <span>Settings</span>
           </button>
 

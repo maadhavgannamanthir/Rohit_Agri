@@ -21,6 +21,7 @@ import type {
   Invoice,
   InvoiceItem,
   Payment,
+  FarmSettings,
 } from '@/lib/farmData';
 
 // ---------------- Row types ----------------
@@ -309,8 +310,14 @@ export async function fetchPartners(): Promise<Partner[]> {
 
 // ---------------- Mutations: Create ----------------
 function genId(prefix: string): string {
-  const r = Math.random().toString(36).slice(2, 7).toUpperCase();
-  return `${prefix}${Date.now().toString().slice(-4)}${r.slice(0, 2)}`;
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 }
 
 export async function addAnimal(data: Omit<Animal, 'id' | 'weights' | 'photos' | 'allocatedExpenses'>): Promise<Animal> {
@@ -774,17 +781,16 @@ export async function fetchMilkCollections(): Promise<MilkCollection[]> {
 
 export async function addMilkCollection(c: Omit<MilkCollection, 'id' | 'totalQty'>): Promise<MilkCollection> {
   const userId = await getUserId();
-  const total = c.morningQty + c.eveningQty;
   const { data, error } = await supabase.from('milk_collections').insert({
     animal_id: c.animalId,
     collection_date: c.date,
     morning_qty: c.morningQty,
     evening_qty: c.eveningQty,
-    total_qty: total,
     notes: c.notes || null,
     user_id: userId,
   }).select().single();
   if (error) throw error;
+  const total = data.total_qty || (c.morningQty + c.eveningQty);
   await writeAudit('create', 'milk_collection', data.id, `Milked ${total}L from ${c.animalId}`, null);
   return rowToMilkCollection(data);
 }
@@ -1111,3 +1117,43 @@ function rowToPayment(r: any): Payment {
     notes: r.notes || '',
   };
 }
+
+function rowToFarmSettings(r: any): FarmSettings {
+  return {
+    userId: r.user_id,
+    farmName: r.farm_name,
+    address: r.address || '',
+    phone: r.phone || '',
+    email: r.email || '',
+    gstNumber: r.gst_number || '',
+    invoicePrefix: r.invoice_prefix || 'INV',
+    currency: r.currency || 'INR',
+    logoUrl: r.logo_url || '',
+  };
+}
+
+export async function fetchFarmSettings(): Promise<FarmSettings | null> {
+  const { data, error } = await supabase.from('farm_settings').select('*');
+  if (error) throw error;
+  if (!data || data.length === 0) return null;
+  return rowToFarmSettings(data[0]);
+}
+
+export async function saveFarmSettings(settings: Omit<FarmSettings, 'userId'>): Promise<FarmSettings> {
+  const userId = await getUserId();
+  const { data, error } = await supabase.from('farm_settings').upsert({
+    user_id: userId,
+    farm_name: settings.farmName,
+    address: settings.address || null,
+    phone: settings.phone || null,
+    email: settings.email || null,
+    gst_number: settings.gstNumber || null,
+    invoice_prefix: settings.invoicePrefix || 'INV',
+    currency: settings.currency || 'INR',
+    logo_url: settings.logoUrl || null,
+    updated_at: new Date().toISOString(),
+  }).select().single();
+  if (error) throw error;
+  return rowToFarmSettings(data);
+}
+

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Client, MilkDelivery, Invoice, InvoiceItem, formatCurrency } from '@/lib/farmData';
+import { Client, MilkDelivery, Invoice, InvoiceItem, FarmSettings, formatCurrency } from '@/lib/farmData';
 import {
   FileText, Calendar, Plus, Trash2, Search, Filter,
   TrendingUp, IndianRupee, X, CheckCircle, Clock, AlertTriangle, Download, Printer
@@ -11,6 +11,7 @@ interface Props {
   clients: Client[];
   deliveries: MilkDelivery[];
   invoices: Invoice[];
+  settings: FarmSettings | null;
   onAdd: (inv: Omit<Invoice, 'id' | 'items'>, items: Omit<InvoiceItem, 'id' | 'invoiceId'>[]) => Promise<void>;
   onDelete: (inv: Invoice) => Promise<void>;
   onUpdateStatus: (id: string, status: Invoice['status']) => Promise<void>;
@@ -20,6 +21,7 @@ const InvoicesView: React.FC<Props> = ({
   clients,
   deliveries,
   invoices,
+  settings,
   onAdd,
   onDelete,
   onUpdateStatus
@@ -94,12 +96,23 @@ const InvoicesView: React.FC<Props> = ({
 
   const grandTotal = useMemo(() => subtotal + taxAmount, [subtotal, taxAmount]);
 
-  // Generate next sequential invoice number
+  // Generate next sequential invoice number using the settings prefix
   const nextInvoiceNumber = useMemo(() => {
-    const count = invoices.length + 1;
     const year = new Date().getFullYear();
-    return `INV-${year}-${String(count).padStart(4, '0')}`;
-  }, [invoices]);
+    const prefixStr = settings?.invoicePrefix || 'INV';
+    const prefix = `${prefixStr}-${year}-`;
+    
+    const yearInvoices = invoices.filter(inv => inv.invoiceNumber.startsWith(prefix));
+    let maxNum = 0;
+    yearInvoices.forEach(inv => {
+      const parts = inv.invoiceNumber.split('-');
+      const numVal = parseInt(parts[2], 10);
+      if (!isNaN(numVal) && numVal > maxNum) {
+        maxNum = numVal;
+      }
+    });
+    return `${prefix}${String(maxNum + 1).padStart(4, '0')}`;
+  }, [invoices, settings]);
 
   const handleAddCustomItem = () => {
     if (!newCustomDesc || !newCustomAmount) return;
@@ -189,13 +202,15 @@ const InvoicesView: React.FC<Props> = ({
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.setTextColor(50, 50, 50);
-    doc.text('ROHIT AGRO', 15, 35);
+    doc.text((settings?.farmName || 'ROHIT AGRO').toUpperCase(), 15, 35);
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(120, 120, 120);
-    doc.text('Livestock & Dairy Management ERP', 15, 41);
-    doc.text('Email: info@rohitagro.com | Phone: +91 98765 43210', 15, 46);
+    doc.text(settings?.address || 'Livestock & Dairy Management ERP', 15, 41);
+    
+    const contactLine = `Email: ${settings?.email || 'info@rohitagro.com'} | Phone: ${settings?.phone || '+91 98765 43210'}${settings?.gstNumber ? ' | GST: ' + settings.gstNumber : ''}`;
+    doc.text(contactLine, 15, 46);
 
     // Invoice Title & Info
     doc.setFontSize(18);
@@ -309,9 +324,9 @@ const InvoicesView: React.FC<Props> = ({
         <body onload="window.print();window.close();">
           <div class="header">
             <div>
-              <div class="logo">ROHIT AGRO</div>
-              <div>Livestock & Dairy Management ERP</div>
-              <div>Phone: +91 98765 43210</div>
+              <div class="logo">${settings?.farmName || 'ROHIT AGRO'}</div>
+              <div>${settings?.address || 'Livestock & Dairy Management ERP'}</div>
+              <div>Phone: ${settings?.phone || '+91 98765 43210'}${settings?.email ? ` | Email: ${settings.email}` : ''}${settings?.gstNumber ? `<br/>GST: ${settings.gstNumber}` : ''}</div>
             </div>
             <div>
               <div class="inv-title">INVOICE</div>
@@ -731,10 +746,15 @@ const InvoicesView: React.FC<Props> = ({
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex justify-between items-start border-b border-stone-100 pb-4">
                 <div>
-                  <div className="text-xl font-bold text-[#6B8E23]">ROHIT AGRO</div>
+                  <div className="text-xl font-bold text-[#6B8E23]">{settings?.farmName || 'ROHIT AGRO'}</div>
                   <div className="text-[10px] text-stone-500 font-semibold uppercase tracking-wider mt-0.5">
-                    Livestock & Dairy Management ERP
+                    {settings?.address || 'Livestock & Dairy Management ERP'}
                   </div>
+                  {(settings?.phone || settings?.email || settings?.gstNumber) && (
+                    <div className="text-[9px] text-stone-450 mt-0.5 font-medium">
+                      {settings?.phone} {settings?.email && ` · ${settings.email}`} {settings?.gstNumber && ` · GST: ${settings.gstNumber}`}
+                    </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${
