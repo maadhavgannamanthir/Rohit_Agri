@@ -162,10 +162,14 @@ const AnimalModal: React.FC<Props> = ({
         {/* Tabs Bar */}
         <div className="sticky top-0 z-10 bg-white border-b border-stone-200 px-5 flex gap-1 overflow-x-auto shrink-0">
           <TabButton active={tab === 'details'} onClick={() => setTab('details')} icon={Tag} label="Details" />
-          <TabButton active={tab === 'growth'} onClick={() => setTab('growth')} icon={Scale} label="Growth Log" />
+          {animal.species !== 'Cow' && animal.species !== 'Country Chicken' && (
+            <>
+              <TabButton active={tab === 'growth'} onClick={() => setTab('growth')} icon={Scale} label="Growth Log" />
+              <TabButton active={tab === 'goal'} onClick={() => setTab('goal')} icon={History} label="Goals" />
+            </>
+          )}
           <TabButton active={tab === 'health'} onClick={() => setTab('health')} icon={Activity} label="Health" />
           <TabButton active={tab === 'finance'} onClick={() => setTab('finance')} icon={DollarSign} label="Ledger" />
-          <TabButton active={tab === 'goal'} onClick={() => setTab('goal')} icon={History} label="Goals" />
         </div>
 
         {/* Modal Scroll Content */}

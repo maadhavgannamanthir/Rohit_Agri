@@ -14,6 +14,7 @@ import {
   User,
   FileText,
   CreditCard,
+  Egg,
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,7 +31,8 @@ export type ViewKey =
   | 'expenses'
   | 'partners'
   | 'reports'
-  | 'settings';
+  | 'settings'
+  | 'egg_batches';
 
 interface Props {
   current: ViewKey;
@@ -59,6 +61,7 @@ const sections: NavSection[] = [
       { key: 'animals', label: 'Livestock', icon: Sprout },
       { key: 'weights', label: 'Weight Logs', icon: Scale },
       { key: 'milk_production', label: 'Milk Production', icon: Droplet },
+      { key: 'egg_batches', label: 'Egg Incubator', icon: Egg },
     ],
   },
   {

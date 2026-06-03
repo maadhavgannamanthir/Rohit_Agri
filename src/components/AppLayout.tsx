@@ -12,6 +12,7 @@ import MilkDeliveriesView from './farm/MilkDeliveriesView';
 import InvoicesView from './farm/InvoicesView';
 import PaymentsView from './farm/PaymentsView';
 import SettingsView from './farm/SettingsView';
+import EggIncubatorView from './farm/EggIncubatorView';
 import AnimalModal from './farm/AnimalModal';
 import AddAnimalModal from './farm/AddAnimalModal';
 import AuthPage from './farm/AuthPage';
@@ -33,6 +34,7 @@ import {
   InvoiceItem,
   Payment,
   FarmSettings,
+  EggBatch,
   formatCurrency,
 } from '@/lib/farmData';
 import {
@@ -75,6 +77,10 @@ import {
   deletePayment as dbDeletePayment,
   fetchFarmSettings,
   saveFarmSettings as dbSaveFarmSettings,
+  fetchEggBatches,
+  addEggBatch as dbAddEggBatch,
+  updateEggBatch as dbUpdateEggBatch,
+  deleteEggBatch as dbDeleteEggBatch,
 } from '@/lib/farmDb';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from './farm/Header';
@@ -107,6 +113,7 @@ const AppLayout: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [settings, setSettings] = useState<FarmSettings | null>(null);
+  const [eggBatches, setEggBatches] = useState<EggBatch[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,7 +139,7 @@ const AppLayout: React.FC = () => {
   const loadAll = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const [a, e, p, mc, c, d, inv, pay, fsData] = await Promise.all([
+      const [a, e, p, mc, c, d, inv, pay, fsData, eggsData] = await Promise.all([
         fetchAnimals(),
         fetchExpenses(),
         fetchPartners(),
@@ -142,6 +149,7 @@ const AppLayout: React.FC = () => {
         fetchInvoices(),
         fetchPayments(),
         fetchFarmSettings(),
+        fetchEggBatches(),
       ]);
       setAnimals(a);
       setExpenses(e);
@@ -151,6 +159,7 @@ const AppLayout: React.FC = () => {
       setDeliveries(d);
       setInvoices(inv);
       setPayments(pay);
+      setEggBatches(eggsData);
 
       let fs = fsData;
       if (!fs) {
@@ -183,6 +192,7 @@ const AppLayout: React.FC = () => {
       setInvoices([]);
       setPayments([]);
       setSettings(null);
+      setEggBatches([]);
       setError(null);
       setLoading(false);
     }
@@ -253,6 +263,37 @@ const AppLayout: React.FC = () => {
   const handleAddAnimal = async (data: Omit<Animal, 'id' | 'weights' | 'photos' | 'allocatedExpenses'>) => {
     try { const c = await dbAddAnimal(data); setAnimals((p) => [...p, c]); pushToast(`Registered: ${c.name}`); }
     catch (err) { pushToast(err instanceof Error ? err.message : 'Failed', 'error'); }
+  };
+
+  // ---------- Egg Incubator ----------
+  const handleAddEggBatch = async (b: Omit<EggBatch, 'id' | 'createdAt'>) => {
+    try {
+      const c = await dbAddEggBatch(b);
+      setEggBatches((prev) => [c, ...prev]);
+      pushToast(`Egg batch added: ${c.quantity} eggs`);
+    } catch (err) { pushToast(err instanceof Error ? err.message : 'Failed', 'error'); }
+  };
+
+  const handleUpdateEggBatch = async (id: string, patch: Partial<Omit<EggBatch, 'id' | 'createdAt'>>) => {
+    try {
+      const updated = await dbUpdateEggBatch(id, patch);
+      setEggBatches((prev) => prev.map((b) => (b.id === id ? updated : b)));
+      pushToast(`Egg batch updated: ${updated.status}`);
+
+      // If hatching occurred, refetch animals to sync new auto-created chickens
+      if (patch.status === 'Hatched' || (patch.hatchedCount && patch.hatchedCount > 0)) {
+        const nextAnimals = await fetchAnimals();
+        setAnimals(nextAnimals);
+      }
+    } catch (err) { pushToast(err instanceof Error ? err.message : 'Failed', 'error'); }
+  };
+
+  const handleDeleteEggBatch = async (id: string) => {
+    try {
+      await dbDeleteEggBatch(id);
+      setEggBatches((prev) => prev.filter((b) => b.id !== id));
+      pushToast('Egg batch deleted');
+    } catch (err) { pushToast(err instanceof Error ? err.message : 'Failed', 'error'); }
   };
 
   // ---------- Milk Collections ----------
@@ -522,6 +563,7 @@ const AppLayout: React.FC = () => {
     partners: 'Partners',
     reports: 'Reports',
     settings: 'Settings',
+    egg_batches: 'Egg Incubator',
   };
   const subtitles: Record<ViewKey, string> = {
     dashboard: 'Overview of your farm performance',
@@ -536,6 +578,7 @@ const AppLayout: React.FC = () => {
     partners: 'Profit shares & distributions',
     reports: 'Analytics, exports & insights',
     settings: 'Configure farm profile & billing defaults',
+    egg_batches: 'Track eggs collection and hatching cycles',
   };
 
 
@@ -581,6 +624,15 @@ const AppLayout: React.FC = () => {
             onLogWeight={handleLogGrowth}
             onEditWeight={(animal, log) => setEditWeight({ animal, log })}
             onDeleteWeight={(animal, log) => setDeleteTarget({ kind: 'weight', animal, log })}
+          />
+        )}
+
+        {view === 'egg_batches' && (
+          <EggIncubatorView
+            eggBatches={eggBatches}
+            onAdd={handleAddEggBatch}
+            onUpdate={handleUpdateEggBatch}
+            onDelete={handleDeleteEggBatch}
           />
         )}
 

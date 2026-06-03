@@ -68,6 +68,7 @@ const Dashboard: React.FC<Props> = ({
   const cows = active.filter((a) => a.species === 'Cow');
   const goats = active.filter((a) => a.species === 'Goat');
   const sheep = active.filter((a) => a.species === 'Sheep');
+  const chickens = active.filter((a) => a.species === 'Country Chicken');
 
   // Milk stats
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -133,7 +134,7 @@ const Dashboard: React.FC<Props> = ({
     (a) => a.acquisitionDate && a.acquisitionDate.startsWith(currentYM),
   ).length;
 
-  const activeChangeLabel = `Cows: ${cows.length} | Goats: ${goats.length} | Sheep: ${sheep.length}`;
+  const activeChangeLabel = `Cows: ${cows.length} | Goats: ${goats.length} | Sheep: ${sheep.length} | Chickens: ${chickens.length}`;
 
   // Net profit MoM comparison
   const monthlyAgg = useMemo(() => {

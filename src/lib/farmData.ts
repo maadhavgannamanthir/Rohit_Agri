@@ -3,7 +3,20 @@
 
 export type AnimalSex = 'Male' | 'Female';
 export type AnimalStatus = 'Active' | 'Sold' | 'Deceased' | 'Pregnant' | 'Lactating' | 'Dry' | 'Transferred';
-export type AnimalSpecies = 'Sheep' | 'Goat' | 'Cow';
+export type AnimalSpecies = 'Sheep' | 'Goat' | 'Cow' | 'Country Chicken';
+
+export interface EggBatch {
+  id: string;
+  collectionDate: string;
+  quantity: number;
+  status: 'Incubating' | 'Hatched' | 'Damaged';
+  hatchedCount: number;
+  damagedCount: number;
+  hatchDate?: string;
+  notes?: string;
+  userId?: string;
+  createdAt?: string;
+}
 
 export interface WeightLog {
   date: string;
@@ -169,7 +182,8 @@ export type AuditEntityType =
   | 'client'
   | 'milk_delivery'
   | 'invoice'
-  | 'payment';
+  | 'payment'
+  | 'egg_batch';
 
 export interface AuditLog {
   id: string;

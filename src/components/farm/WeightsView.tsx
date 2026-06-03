@@ -77,7 +77,7 @@ const GoalBadge: React.FC<{ status: GoalStatus; compact?: boolean }> = ({ status
 };
 
 const WeightsView: React.FC<Props> = ({ animals, onLogWeight, onEditWeight, onDeleteWeight }) => {
-  const active = animals.filter((a) => a.status === 'Active');
+  const active = animals.filter((a) => a.status === 'Active' && a.species !== 'Cow' && a.species !== 'Country Chicken');
   const [selectedId, setSelectedId] = useState<string>(active[0]?.id || '');
   const selected = active.find((a) => a.id === selectedId) || active[0];
   const [newWeight, setNewWeight] = useState('');

@@ -13,13 +13,14 @@ const SAMPLE_PHOTOS = [
   'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1548550022-c352f8be70dd?w=600&h=400&fit=crop',
 ];
 
 const AddAnimalModal: React.FC<Props> = ({ open, onClose, onAdd }) => {
   const [form, setForm] = useState({
     name: '',
     tagId: '',
-    species: 'Sheep' as 'Sheep' | 'Goat' | 'Cow',
+    species: 'Sheep' as 'Sheep' | 'Goat' | 'Cow' | 'Country Chicken',
     breed: '',
     sex: 'Male' as 'Male' | 'Female',
     birthDate: '',
@@ -135,10 +136,11 @@ const AddAnimalModal: React.FC<Props> = ({ open, onClose, onAdd }) => {
               <input value={form.tagId} onChange={(e) => setForm({ ...form, tagId: e.target.value })} placeholder="e.g. SH-013" className={inputCls} />
             </Field>
             <Field label="Species">
-              <select value={form.species} onChange={(e) => setForm({ ...form, species: e.target.value as 'Sheep' | 'Goat' | 'Cow' })} className={inputCls}>
+              <select value={form.species} onChange={(e) => setForm({ ...form, species: e.target.value as any })} className={inputCls}>
                 <option>Sheep</option>
                 <option>Goat</option>
                 <option>Cow</option>
+                <option>Country Chicken</option>
               </select>
             </Field>
             <Field label="Breed">

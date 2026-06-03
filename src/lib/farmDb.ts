@@ -22,6 +22,7 @@ import type {
   InvoiceItem,
   Payment,
   FarmSettings,
+  EggBatch,
 } from '@/lib/farmData';
 
 // ---------------- Row types ----------------
@@ -87,6 +88,19 @@ interface AuditRow {
   entity_id: string;
   entity_label: string | null;
   changes: Record<string, { before?: unknown; after?: unknown }> | null;
+  created_at: string;
+}
+
+interface EggBatchRow {
+  id: string;
+  collection_date: string;
+  quantity: number;
+  status: 'Incubating' | 'Hatched' | 'Damaged';
+  hatched_count: number;
+  damaged_count: number;
+  hatch_date: string | null;
+  notes: string | null;
+  user_id: string;
   created_at: string;
 }
 
@@ -163,6 +177,21 @@ function rowToAudit(r: AuditRow): AuditLog {
     entityId: r.entity_id,
     entityLabel: r.entity_label || '',
     changes: r.changes,
+    createdAt: r.created_at,
+  };
+}
+
+function rowToEggBatch(r: EggBatchRow): EggBatch {
+  return {
+    id: r.id,
+    collectionDate: r.collection_date,
+    quantity: r.quantity,
+    status: r.status,
+    hatchedCount: num(r.hatched_count),
+    damagedCount: num(r.damaged_count),
+    hatchDate: r.hatch_date || undefined,
+    notes: r.notes || '',
+    userId: r.user_id,
     createdAt: r.created_at,
   };
 }
@@ -1155,5 +1184,74 @@ export async function saveFarmSettings(settings: Omit<FarmSettings, 'userId'>): 
   }).select().single();
   if (error) throw error;
   return rowToFarmSettings(data);
+}
+
+export async function fetchEggBatches(): Promise<EggBatch[]> {
+  const { data, error } = await supabase
+    .from('egg_batches')
+    .select('*')
+    .order('collection_date', { ascending: false });
+  if (error) throw error;
+  return (data as EggBatchRow[]).map(rowToEggBatch);
+}
+
+export async function addEggBatch(b: Omit<EggBatch, 'id' | 'createdAt'>): Promise<EggBatch> {
+  const userId = await getUserId();
+  const { data, error } = await supabase
+    .from('egg_batches')
+    .insert({
+      collection_date: b.collectionDate,
+      quantity: b.quantity,
+      status: b.status,
+      hatched_count: b.hatchedCount,
+      damaged_count: b.damagedCount,
+      hatch_date: b.hatchDate || null,
+      notes: b.notes || null,
+      user_id: userId,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  await writeAudit('create', 'egg_batch', data.id, `Egg Batch: ${b.quantity} eggs`, data);
+  return rowToEggBatch(data as EggBatchRow);
+}
+
+export async function updateEggBatch(id: string, patch: Partial<Omit<EggBatch, 'id' | 'createdAt'>>): Promise<EggBatch> {
+  // Get current row for audit
+  const currentRes = await supabase.from('egg_batches').select('*').eq('id', id).single();
+  if (currentRes.error) throw currentRes.error;
+  const current = currentRes.data as EggBatchRow;
+
+  const updatePayload: any = {};
+  if (patch.collectionDate !== undefined) updatePayload.collection_date = patch.collectionDate;
+  if (patch.quantity !== undefined) updatePayload.quantity = patch.quantity;
+  if (patch.status !== undefined) updatePayload.status = patch.status;
+  if (patch.hatchedCount !== undefined) updatePayload.hatched_count = patch.hatchedCount;
+  if (patch.damagedCount !== undefined) updatePayload.damaged_count = patch.damagedCount;
+  if (patch.hatchDate !== undefined) updatePayload.hatch_date = patch.hatchDate || null;
+  if (patch.notes !== undefined) updatePayload.notes = patch.notes || null;
+
+  const { data, error } = await supabase
+    .from('egg_batches')
+    .update(updatePayload)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+
+  const changes = diff(current as unknown as Record<string, unknown>, updatePayload as Record<string, unknown>);
+  await writeAudit('update', 'egg_batch', id, `Egg Batch Updated`, changes);
+  return rowToEggBatch(data as EggBatchRow);
+}
+
+export async function deleteEggBatch(id: string): Promise<void> {
+  const currentRes = await supabase.from('egg_batches').select('*').eq('id', id).single();
+  if (currentRes.error) throw currentRes.error;
+  const current = currentRes.data as EggBatchRow;
+
+  const { error } = await supabase.from('egg_batches').delete().eq('id', id);
+  if (error) throw error;
+
+  await writeAudit('delete', 'egg_batch', id, `Egg Batch Deleted`, current as any);
 }
 

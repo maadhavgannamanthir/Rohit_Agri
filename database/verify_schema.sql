@@ -39,7 +39,8 @@ WHERE table_schema = 'public'
       'milk_deliveries',
       'invoices',
       'invoice_items',
-      'payments'
+      'payments',
+      'egg_batches'
   )
 ORDER BY table_name, ordinal_position;
 
@@ -233,7 +234,19 @@ WITH required(table_name, column_name) AS (
         ('payments','amount_received'),
         ('payments','notes'),
         ('payments','user_id'),
-        ('payments','created_at')
+        ('payments','created_at'),
+
+        -- egg_batches
+        ('egg_batches','id'),
+        ('egg_batches','collection_date'),
+        ('egg_batches','quantity'),
+        ('egg_batches','status'),
+        ('egg_batches','hatched_count'),
+        ('egg_batches','damaged_count'),
+        ('egg_batches','hatch_date'),
+        ('egg_batches','notes'),
+        ('egg_batches','user_id'),
+        ('egg_batches','created_at')
 )
 SELECT
     r.table_name,
@@ -260,7 +273,8 @@ WHERE schemaname = 'public'
       'animals','weight_logs','expenses','partners',
       'sales','goal_history','audit_logs',
       'vaccinations','vet_visits','milk_collections',
-      'clients','milk_deliveries','invoices','invoice_items','payments'
+      'clients','milk_deliveries','invoices','invoice_items','payments',
+      'egg_batches'
   )
 ORDER BY tablename;
 
