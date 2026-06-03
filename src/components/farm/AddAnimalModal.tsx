@@ -13,7 +13,7 @@ const SAMPLE_PHOTOS = [
   'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1533318087102-b3ad366ed041?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1524024973431-2ad916746881?w=600&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1548550022-c352f8be70dd?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1590677147861-622ec92a60f6?w=600&h=400&fit=crop',
 ];
 
 const AddAnimalModal: React.FC<Props> = ({ open, onClose, onAdd }) => {
