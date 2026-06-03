@@ -2,12 +2,102 @@
 // Data loading and persistence lives in src/lib/farmDb.ts (Supabase).
 
 export type AnimalSex = 'Male' | 'Female';
-export type AnimalStatus = 'Active' | 'Sold' | 'Deceased';
-export type AnimalSpecies = 'Sheep' | 'Goat';
+export type AnimalStatus = 'Active' | 'Sold' | 'Deceased' | 'Pregnant' | 'Lactating' | 'Dry' | 'Transferred';
+export type AnimalSpecies = 'Sheep' | 'Goat' | 'Cow';
 
 export interface WeightLog {
   date: string;
   weightKg: number;
+  heightCm?: number;
+}
+
+export interface Vaccination {
+  id: string;
+  animalId: string;
+  date: string;
+  vaccineName: string;
+  notes: string;
+}
+
+export interface VetVisit {
+  id: string;
+  animalId: string;
+  date: string;
+  doctorName: string;
+  diagnosis: string;
+  treatment: string;
+  cost: number;
+  notes: string;
+}
+
+export interface MilkCollection {
+  id: string;
+  animalId: string;
+  date: string;
+  morningQty: number;
+  eveningQty: number;
+  totalQty: number;
+  notes: string;
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  contactPerson: string;
+  mobile: string;
+  alternateMobile: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  notes: string;
+  active: boolean;
+}
+
+export interface MilkDelivery {
+  id: string;
+  clientId: string;
+  date: string;
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+  notes: string;
+  status: 'Delivered' | 'Cancelled';
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  description: string;
+  quantity: number;
+  unitRate: number;
+  totalAmount: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  clientId: string;
+  invoiceDate: string;
+  dueDate: string;
+  subtotal: number;
+  taxPct: number;
+  taxAmount: number;
+  grandTotal: number;
+  status: 'Draft' | 'Issued' | 'Partially Paid' | 'Paid' | 'Overdue';
+  notes: string;
+  items?: InvoiceItem[];
+}
+
+export interface Payment {
+  id: string;
+  clientId: string;
+  invoiceId?: string;
+  paymentDate: string;
+  paymentMethod: 'Cash' | 'Bank Transfer' | 'UPI' | 'Cheque' | 'Other';
+  referenceNumber: string;
+  amountReceived: number;
+  notes: string;
 }
 
 export interface Animal {
@@ -27,6 +117,8 @@ export interface Animal {
   photoUrl: string;
   photos: string[];
   weights: WeightLog[];
+  vaccinations?: Vaccination[];
+  vetVisits?: VetVisit[];
   healthNotes: string;
   vaccinated: boolean;
   allocatedExpenses: number;
@@ -65,7 +157,19 @@ export interface Partner {
 }
 
 export type AuditAction = 'create' | 'update' | 'delete';
-export type AuditEntityType = 'animal' | 'expense' | 'partner' | 'weight_log' | 'sale';
+export type AuditEntityType =
+  | 'animal'
+  | 'expense'
+  | 'partner'
+  | 'weight_log'
+  | 'sale'
+  | 'vaccination'
+  | 'vet_visit'
+  | 'milk_collection'
+  | 'client'
+  | 'milk_delivery'
+  | 'invoice'
+  | 'payment';
 
 export interface AuditLog {
   id: string;

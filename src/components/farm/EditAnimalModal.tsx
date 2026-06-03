@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Animal } from '@/lib/farmData';
+import { Animal, AnimalStatus } from '@/lib/farmData';
 import { X, Save, Plus, Trash2, Target } from 'lucide-react';
 
 interface Props {
@@ -18,6 +18,7 @@ interface Props {
         | 'photos'
         | 'targetWeightKg'
         | 'targetDate'
+        | 'status'
       >
     >,
     goalReason?: string,
@@ -27,6 +28,7 @@ interface Props {
 const EditAnimalModal: React.FC<Props> = ({ animal, onClose, onSave }) => {
   const [name, setName] = useState('');
   const [breed, setBreed] = useState('');
+  const [status, setStatus] = useState<AnimalStatus>('Active');
   const [healthNotes, setHealthNotes] = useState('');
   const [vaccinated, setVaccinated] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
@@ -39,6 +41,7 @@ const EditAnimalModal: React.FC<Props> = ({ animal, onClose, onSave }) => {
     if (animal) {
       setName(animal.name);
       setBreed(animal.breed);
+      setStatus(animal.status);
       setHealthNotes(animal.healthNotes);
       setVaccinated(animal.vaccinated);
       setPhotos(animal.photos.length ? animal.photos : [animal.photoUrl]);
@@ -78,6 +81,7 @@ const EditAnimalModal: React.FC<Props> = ({ animal, onClose, onSave }) => {
       {
         name: name.trim(),
         breed: breed.trim(),
+        status,
         healthNotes: healthNotes.trim(),
         vaccinated,
         photoUrl: cleanPhotos[0],
@@ -118,6 +122,28 @@ const EditAnimalModal: React.FC<Props> = ({ animal, onClose, onSave }) => {
                 onChange={(e) => setBreed(e.target.value)}
                 className="input"
               />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Status">
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as AnimalStatus)}
+                className="input"
+              >
+                <option value="Active">Active</option>
+                {animal.sex === 'Female' && (
+                  <>
+                    <option value="Pregnant">Pregnant</option>
+                    <option value="Lactating">Lactating</option>
+                    <option value="Dry">Dry</option>
+                  </>
+                )}
+                <option value="Sold">Sold</option>
+                <option value="Deceased">Deceased</option>
+                <option value="Transferred">Transferred</option>
+              </select>
             </Field>
           </div>
 

@@ -10,11 +10,26 @@ import {
   X,
   LogOut,
   LogIn,
+  Droplet,
+  User,
+  FileText,
+  CreditCard,
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 
-export type ViewKey = 'dashboard' | 'animals' | 'weights' | 'expenses' | 'partners' | 'reports';
+export type ViewKey =
+  | 'dashboard'
+  | 'animals'
+  | 'weights'
+  | 'milk_production'
+  | 'clients'
+  | 'milk_deliveries'
+  | 'invoices'
+  | 'payments'
+  | 'expenses'
+  | 'partners'
+  | 'reports';
 
 interface Props {
   current: ViewKey;
@@ -24,13 +39,49 @@ interface Props {
   onSignInClick: () => void;
 }
 
-const items: { key: ViewKey; label: string; icon: React.ElementType; hint?: string }[] = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'animals', label: 'Livestock', icon: Sprout },
-  { key: 'weights', label: 'Weight Logs', icon: Scale },
-  { key: 'expenses', label: 'Expenses', icon: Receipt },
-  { key: 'partners', label: 'Partners', icon: Users },
-  { key: 'reports', label: 'Reports', icon: BarChart3 },
+interface NavItem {
+  key: ViewKey;
+  label: string;
+  icon: React.ElementType;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const sections: NavSection[] = [
+  {
+    title: 'Farm',
+    items: [
+      { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { key: 'animals', label: 'Livestock', icon: Sprout },
+      { key: 'weights', label: 'Weight Logs', icon: Scale },
+      { key: 'milk_production', label: 'Milk Production', icon: Droplet },
+    ],
+  },
+  {
+    title: 'CRM',
+    items: [
+      { key: 'clients', label: 'Clients', icon: User },
+      { key: 'milk_deliveries', label: 'Milk Deliveries', icon: Droplet },
+    ],
+  },
+  {
+    title: 'Finance',
+    items: [
+      { key: 'invoices', label: 'Invoices', icon: FileText },
+      { key: 'payments', label: 'Payments', icon: CreditCard },
+      { key: 'expenses', label: 'Expenses', icon: Receipt },
+      { key: 'partners', label: 'Partners', icon: Users },
+    ],
+  },
+  {
+    title: 'Admin',
+    items: [
+      { key: 'reports', label: 'Reports', icon: BarChart3 },
+    ],
+  },
 ];
 
 const Sidebar: React.FC<Props> = ({ current, onSelect, open, onClose, onSignInClick }) => {
@@ -53,7 +104,7 @@ const Sidebar: React.FC<Props> = ({ current, onSelect, open, onClose, onSignInCl
         />
       )}
       <aside
-        className={`fixed lg:sticky top-0 left-0 h-screen w-64 z-40 flex flex-col transition-transform duration-300
+        className={`fixed lg:sticky top-0 left-0 h-screen w-64 shrink-0 z-40 flex flex-col transition-transform duration-300
           bg-gradient-to-b from-[#2D3B1F] via-[#26331A] to-[#1B2412] text-stone-100
           border-r border-black/20 shadow-xl shadow-stone-900/10
           ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
@@ -72,7 +123,7 @@ const Sidebar: React.FC<Props> = ({ current, onSelect, open, onClose, onSignInCl
             <div className="min-w-0">
               <div className="font-bold text-base leading-tight truncate">Rohit Agro</div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-stone-400">
-                Farm Manager
+                Dairy & Livestock ERP
               </div>
             </div>
           </div>
@@ -86,44 +137,48 @@ const Sidebar: React.FC<Props> = ({ current, onSelect, open, onClose, onSignInCl
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          <div className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-            Workspace
-          </div>
-          <div className="space-y-0.5">
-            {items.map((item) => {
-              const Icon = item.icon;
-              const active = current === item.key;
-              return (
-                <button
-                  key={item.key}
-                  onClick={() => {
-                    onSelect(item.key);
-                    onClose();
-                  }}
-                  className={`group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition
-                    ${
-                      active
-                        ? 'bg-white/[0.08] text-white'
-                        : 'text-stone-300 hover:bg-white/[0.04] hover:text-white'
-                    }`}
-                >
-                  {/* Active accent bar */}
-                  <span
-                    className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full transition-all ${
-                      active ? 'h-6 bg-[#A4C148]' : 'h-0 bg-transparent'
-                    }`}
-                  />
-                  <Icon
-                    className={`w-4 h-4 transition ${
-                      active ? 'text-[#C7E07A]' : 'text-stone-400 group-hover:text-stone-200'
-                    }`}
-                  />
-                  <span className="flex-1 text-left">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+          {sections.map((sec) => (
+            <div key={sec.title} className="space-y-1">
+              <div className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                {sec.title}
+              </div>
+              <div className="space-y-0.5">
+                {sec.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = current === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => {
+                        onSelect(item.key);
+                        onClose();
+                      }}
+                      className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition
+                        ${
+                          active
+                            ? 'bg-white/[0.08] text-white font-semibold'
+                            : 'text-stone-300 hover:bg-white/[0.04] hover:text-white'
+                        }`}
+                    >
+                      {/* Active accent bar */}
+                      <span
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full transition-all ${
+                          active ? 'h-5 bg-[#A4C148]' : 'h-0 bg-transparent'
+                        }`}
+                      />
+                      <Icon
+                        className={`w-3.5 h-3.5 transition ${
+                          active ? 'text-[#C7E07A]' : 'text-stone-400 group-hover:text-stone-200'
+                        }`}
+                      />
+                      <span className="flex-1 text-left">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Footer */}

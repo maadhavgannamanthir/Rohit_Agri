@@ -19,7 +19,7 @@ const AddAnimalModal: React.FC<Props> = ({ open, onClose, onAdd }) => {
   const [form, setForm] = useState({
     name: '',
     tagId: '',
-    species: 'Sheep' as 'Sheep' | 'Goat',
+    species: 'Sheep' as 'Sheep' | 'Goat' | 'Cow',
     breed: '',
     sex: 'Male' as 'Male' | 'Female',
     birthDate: '',
@@ -136,9 +136,10 @@ const AddAnimalModal: React.FC<Props> = ({ open, onClose, onAdd }) => {
               <input value={form.tagId} onChange={(e) => setForm({ ...form, tagId: e.target.value })} placeholder="e.g. SH-013" className={inputCls} />
             </Field>
             <Field label="Species">
-              <select value={form.species} onChange={(e) => setForm({ ...form, species: e.target.value as 'Sheep' | 'Goat' })} className={inputCls}>
+              <select value={form.species} onChange={(e) => setForm({ ...form, species: e.target.value as 'Sheep' | 'Goat' | 'Cow' })} className={inputCls}>
                 <option>Sheep</option>
                 <option>Goat</option>
+                <option>Cow</option>
               </select>
             </Field>
             <Field label="Breed">

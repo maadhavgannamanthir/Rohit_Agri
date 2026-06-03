@@ -10,7 +10,7 @@ interface Props {
 
 const AnimalsView: React.FC<Props> = ({ animals, onAdd, onSelect }) => {
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<'All' | 'Active' | 'Sold' | 'Sheep' | 'Goat'>('All');
+  const [filter, setFilter] = useState<'All' | 'Active' | 'Sold' | 'Sheep' | 'Goat' | 'Cow'>('All');
 
   const filtered = useMemo(() => {
     return animals.filter((a) => {
@@ -25,12 +25,13 @@ const AnimalsView: React.FC<Props> = ({ animals, onAdd, onSelect }) => {
         (filter === 'Active' && a.status === 'Active') ||
         (filter === 'Sold' && a.status === 'Sold') ||
         (filter === 'Sheep' && a.species === 'Sheep') ||
-        (filter === 'Goat' && a.species === 'Goat');
+        (filter === 'Goat' && a.species === 'Goat') ||
+        (filter === 'Cow' && a.species === 'Cow');
       return matchQ && matchF;
     });
   }, [animals, query, filter]);
 
-  const filters: typeof filter[] = ['All', 'Active', 'Sold', 'Sheep', 'Goat'];
+  const filters: typeof filter[] = ['All', 'Active', 'Sold', 'Sheep', 'Goat', 'Cow'];
 
   return (
     <div className="space-y-5">
